@@ -1,0 +1,557 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Professional Slate Palette */
+  --slate-50: #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1;
+  --slate-400: #94a3b8;
+  --slate-500: #64748b;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-800: #1e293b;
+  --slate-900: #0f172a;
+  
+  /* Granite Base */
+  --granite-50: #f9fafb;
+  --granite-100: #f3f4f6;
+  --granite-200: #e5e7eb;
+  --granite-300: #d1d5db;
+  --granite-400: #9ca3af;
+  --granite-500: #6b7280;
+  --granite-600: #4b5563;
+  --granite-700: #374151;
+  --granite-800: #1f2937;
+  --granite-900: #111827;
+  
+  /* Neon Accents */
+  --neon-blue: #00d4ff;
+  --neon-purple: #8b5cf6;
+  --neon-green: #10b981;
+  --neon-orange: #f59e0b;
+  --neon-pink: #ec4899;
+  --neon-cyan: #06b6d4;
+  
+  /* Status Colors */
+  --success-500: var(--neon-green);
+  --warning-500: var(--neon-orange);
+  --error-500: #ef4444;
+}
+
+html, body, #root { height: 100%; }
+body { @apply bg-slate-50 text-slate-900; }
+
+.card { 
+  @apply bg-white rounded-2xl p-6 transition-all duration-200 hover:-translate-y-0.5 border border-slate-200;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+.card:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.btn { 
+  @apply inline-flex items-center justify-center rounded-lg px-4 py-2.5 font-medium transition-all duration-200 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2; 
+}
+
+.btn-primary { 
+  @apply text-white border-0;
+  background: linear-gradient(135deg, var(--neon-purple) 0%, var(--neon-blue) 100%);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+}
+.btn-primary:hover {
+  background: linear-gradient(135deg, #7c3aed 0%, #0284c7 100%);
+  box-shadow: 0 0 25px rgba(139, 92, 246, 0.4), 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+.btn-outline { 
+  @apply border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-400;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+.btn-outline:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+.badge { @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold; }
+.badge-green { @apply bg-emerald-100 text-emerald-800 border border-emerald-200; }
+.badge-red { @apply bg-red-100 text-red-800 border border-red-200; }
+.badge-yellow { @apply bg-amber-100 text-amber-800 border border-amber-200; }
+.badge-blue { @apply bg-blue-100 text-blue-800 border border-blue-200; }
+.badge-purple { @apply bg-purple-100 text-purple-800 border border-purple-200; }
+.badge-cyan { @apply bg-cyan-100 text-cyan-800 border border-cyan-200; }
+
+.table { @apply w-full border-collapse border-spacing-0; }
+.table th { 
+  @apply text-left p-4 font-semibold text-slate-700 text-sm uppercase tracking-wide border-b border-slate-200; 
+  background: linear-gradient(135deg, var(--slate-50) 0%, var(--granite-50) 100%);
+}
+.table td { @apply p-4 border-b border-slate-100; }
+.table tbody tr { @apply transition-colors duration-200; }
+.table tbody tr:hover { @apply bg-slate-50; }
+.table tbody tr:last-child td { @apply border-b-0; }
+
+input, select { 
+  @apply border border-slate-300 rounded-lg px-4 py-2.5 w-full transition-all duration-200 focus:ring-2 focus:border-purple-500 focus:outline-none hover:border-slate-400; 
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+input:focus, select:focus {
+  --tw-ring-color: var(--neon-purple);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1), 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+label { @apply text-sm font-semibold text-slate-700; }
+.modal-backdrop { @apply fixed inset-0 bg-black/50 flex items-center justify-center backdrop-blur-sm z-50; }
+.modal { 
+  @apply bg-white rounded-2xl w-full max-w-2xl p-6 border border-slate-200 max-h-[90vh] overflow-y-auto;
+  box-shadow: 0 20px 32px rgba(0, 0, 0, 0.15), 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Modern Calendar styling with professional palette */
+.rbc-calendar {
+  @apply bg-white rounded-xl border border-slate-200;
+  font-family: inherit;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.rbc-header {
+  background: linear-gradient(135deg, var(--slate-50) 0%, var(--granite-50) 100%);
+  @apply font-semibold text-slate-800 border-b border-slate-200 py-3;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+.rbc-event {
+  @apply rounded-md text-white font-medium;
+  background: linear-gradient(135deg, var(--neon-purple) 0%, var(--neon-blue) 100%);
+  border: none;
+  padding: 2px 6px;
+  font-size: 0.75rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+}
+
+.rbc-event.priority {
+  background: linear-gradient(135deg, var(--neon-purple) 0%, #7c3aed 100%);
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.3);
+}
+
+.rbc-event.outsourced {
+  background: linear-gradient(135deg, var(--neon-orange) 0%, #d97706 100%);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+}
+
+.rbc-selected {
+  background: var(--neon-cyan) !important;
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.4) !important;
+}
+
+.rbc-today {
+  background: var(--slate-50);
+  @apply border border-slate-300;
+}
+
+.rbc-toolbar {
+  @apply mb-6 flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-200;
+}
+
+.rbc-toolbar button {
+  @apply px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium transition-all duration-200 hover:shadow-md hover:-translate-y-0.5;
+}
+
+.rbc-toolbar .rbc-active {
+  background: var(--primary-600);
+  @apply text-white shadow-lg;
+  border-color: var(--primary-600);
+}
+
+.rbc-toolbar-label {
+  @apply text-xl font-bold text-gray-900;
+}
+
+.rbc-date-cell {
+  @apply p-2;
+}
+
+.rbc-date-cell button {
+  @apply w-full h-full rounded-lg transition-all duration-200 font-medium;
+}
+.rbc-date-cell button:hover {
+  background: var(--primary-50);
+  color: var(--primary-600);
+}
+
+.rbc-off-range {
+  @apply text-gray-400;
+}
+
+.rbc-off-range-bg {
+  @apply bg-gray-50;
+}
+
+.rbc-month-view {
+  @apply border-0;
+}
+
+.rbc-month-row {
+  @apply border-b border-gray-100;
+}
+
+.rbc-day-bg {
+  @apply border-r border-gray-100 transition-colors duration-200 hover:bg-gray-50;
+}
+
+.rbc-day-bg:last-child {
+  border-right: none;
+}
+
+/* Mobile FAB (Floating Action Button) Styles - Professional Theme */
+.fab-container {
+  @apply fixed bottom-6 right-6 z-50;
+}
+
+.fab-backdrop {
+  @apply fixed inset-0 bg-black/20 backdrop-blur-sm z-40;
+}
+
+.fab-main {
+  @apply w-14 h-14 text-white rounded-full transition-all duration-300 hover:scale-110 focus:outline-none flex items-center justify-center;
+  background: linear-gradient(135deg, var(--neon-purple) 0%, var(--neon-blue) 100%);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3), 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+.fab-main:hover {
+  box-shadow: 0 0 30px rgba(139, 92, 246, 0.4), 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.fab-main:focus {
+  --tw-ring-color: var(--neon-purple);
+  @apply ring-4 ring-opacity-30;
+}
+
+.fab-main.fab-open {
+  @apply rotate-45;
+  background: linear-gradient(135deg, var(--neon-pink) 0%, #dc2626 100%);
+  box-shadow: 0 0 25px rgba(236, 72, 153, 0.4), 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+.fab-actions {
+  @apply absolute bottom-16 right-0 flex flex-col gap-3;
+}
+
+.fab-action {
+  @apply w-12 h-12 rounded-full text-white transition-all duration-300 hover:scale-110 flex items-center justify-center text-sm font-medium transform translate-y-2 opacity-0;
+  animation: fabSlideIn 0.3s ease-out forwards;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.fab-action:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.fab-action-label {
+  @apply absolute right-14 bg-slate-800 text-white px-3 py-1 rounded-lg text-xs whitespace-nowrap opacity-0 transition-opacity duration-200 pointer-events-none;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+.fab-action:hover .fab-action-label {
+  @apply opacity-100;
+}
+
+@keyframes fabSlideIn {
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Hide FAB on desktop */
+@media (min-width: 769px) {
+  .fab-container {
+    display: none;
+  }
+}
+
+/* Mobile and tablet responsiveness improvements */
+@media (max-width: 768px) {
+  .card {
+    @apply p-4 mx-2;
+  }
+  
+  .btn {
+    @apply px-3 py-2 text-sm;
+  }
+  
+  /* Better mobile navigation */
+  .sidebar-mobile {
+    @apply w-full max-w-xs;
+  }
+  
+  /* Improved touch targets for mobile */
+  button, .btn, [role="button"] {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+  
+  /* Mobile-first typography */
+  h1 { 
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+  h2 { 
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
+  h3 { 
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+  }
+  
+  /* Better spacing on mobile */
+  .space-y-1 > * + * {
+    margin-top: 0.375rem;
+  }
+  
+  .modal {
+    @apply mx-2 max-w-none;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  .modal-backdrop {
+    @apply px-2;
+  }
+  
+  /* Make sidebar responsive */
+  .sidebar-mobile {
+    @apply fixed inset-y-0 left-0 z-30 w-64 transform transition-transform duration-300 ease-in-out;
+  }
+  
+  .sidebar-mobile.closed {
+    @apply -translate-x-full;
+  }
+  
+  /* Improve table responsiveness */
+  .table {
+    @apply text-xs overflow-x-auto;
+    min-width: 600px; /* Ensure tables don't get too cramped */
+  }
+  
+  .table th,
+  .table td {
+    @apply p-2 text-xs;
+    white-space: nowrap;
+  }
+  
+  /* Better touch targets */
+  input, select, button {
+    @apply min-h-[44px];
+  }
+  
+  /* Form improvements for mobile */
+  .form-input,
+  .form-select {
+    @apply text-base; /* Prevent zoom on iOS */
+    min-height: 44px;
+  }
+  
+  /* Responsive grid adjustments */
+  .responsive-grid {
+    @apply grid-cols-1 gap-4;
+  }
+  
+  /* Force single column on mobile for stat cards */
+  .grid-cols-1\.md\\:grid-cols-2,
+  .grid-cols-1\.md\\:grid-cols-3,
+  .grid-cols-1\.md\\:grid-cols-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+  
+  /* Mobile navigation improvements */
+  .mobile-nav-item {
+    @apply text-base py-3 px-4 rounded-lg;
+  }
+  
+  /* Stats cards on mobile */
+  .stats-grid {
+    @apply grid-cols-2 gap-3;
+  }
+  
+  /* Mobile-specific layout adjustments */
+  .space-y-6 > * + * {
+    margin-top: 1rem;
+  }
+  
+  /* Better padding for mobile containers */
+  main {
+    @apply px-4 py-4;
+  }
+  
+  /* Mobile table container */
+  .table-container {
+    @apply overflow-x-auto -mx-4 px-4;
+  }
+  
+  /* Mobile form grids */
+  .grid\.grid-cols-1\.md\\:grid-cols-2 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 1rem;
+  }
+  
+  /* Mobile button groups */
+  .flex\.gap-2 {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .flex\.gap-2 > .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  /* Improve modal scrolling on mobile */
+  .modal form {
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  
+  /* Mobile filter improvements */
+  .flex\.flex-wrap\.items-center\.gap-4 {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .flex\.flex-wrap\.items-center\.gap-4 > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+/* Tablet-specific improvements (768px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .card {
+    @apply p-5;
+  }
+  
+  .container {
+    @apply px-6;
+  }
+  
+  /* Tablet grid layouts */
+  .tablet-grid-2 {
+    @apply grid-cols-2;
+  }
+  
+  .tablet-grid-3 {
+    @apply grid-cols-3;
+  }
+  
+  /* Better table spacing for tablets */
+  .table th,
+  .table td {
+    @apply p-3 text-sm;
+  }
+  
+  /* Sidebar on tablets */
+  .tablet-sidebar {
+    @apply w-20 lg:w-64;
+  }
+  
+  /* Stats cards on tablets */
+  .stats-grid {
+    @apply grid-cols-4 gap-4;
+  }
+}
+
+/* Large tablet and desktop improvements (1024px+) */
+@media (min-width: 1025px) {
+  .container {
+    @apply px-8;
+  }
+  
+  .card {
+    @apply p-6;
+  }
+  
+  /* Enhanced hover effects for desktop */
+  .card:hover {
+    transform: translateY(-2px);
+  }
+  
+  .btn:hover {
+    transform: translateY(-1px);
+  }
+  
+  /* Desktop-specific layouts */
+  .desktop-grid-4 {
+    @apply grid-cols-4;
+  }
+  
+  .desktop-grid-6 {
+    @apply grid-cols-6;
+  }
+}
+
+/* Ultra-wide screen optimizations (1440px+) */
+@media (min-width: 1440px) {
+  .container {
+    @apply max-w-7xl mx-auto;
+  }
+  
+  .ultra-wide-grid {
+    @apply grid-cols-6;
+  }
+}
+
+/* Small mobile optimizations */
+@media (max-width: 640px) {
+  .fab-container {
+    bottom: 1rem;
+    right: 1rem;
+  }
+  
+  .fab-main {
+    width: 3rem;
+    height: 3rem;
+  }
+  
+  .fab-action {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+  
+  /* Reduced padding on very small screens */
+  .p-4 { 
+    padding: 0.75rem; 
+  }
+  .p-6 { 
+    padding: 1rem; 
+  }
+  .p-8 { 
+    padding: 1rem; 
+  }
+  
+  /* Full width sidebar on very small screens */
+  .sidebar-mobile {
+    width: 100%;
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .sidebar-tablet {
+    width: 5rem; /* Collapsed by default on tablet */
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
