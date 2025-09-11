@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { formatCurrency, EURO_PRICE_PER_BOOKING } from "../utils/currency";
 
 const AppStoreContext = createContext();
 
-// Currency utility - using Euro pricing
-const EURO_PRICE_PER_BOOKING = 45;
+// Import currency utility constant
 
 export function useAppStore() {
   const context = useContext(AppStoreContext);
@@ -497,6 +497,7 @@ export function AppStoreProvider({ children }) {
   };
 
   const generateInvoiceFromBooking = (booking) => {
+    const bookingPrice = booking.price || booking.amount || EURO_PRICE_PER_BOOKING;
     const invoice = {
       id: `INV-${Date.now()}`,
       bookingId: booking.id,
@@ -506,7 +507,7 @@ export function AppStoreProvider({ children }) {
       serviceDate: booking.date,
       pickup: booking.pickup,
       destination: booking.destination,
-      amount: 45, // Using EURO_PRICE_PER_BOOKING from currency utils
+      amount: bookingPrice,
       status: 'pending',
       type: booking.type || 'priority',
       editable: true,
@@ -514,8 +515,8 @@ export function AppStoreProvider({ children }) {
         {
           description: `Transfer service from ${booking.pickup} to ${booking.destination}`,
           quantity: 1,
-          rate: 45,
-          amount: 45
+          rate: bookingPrice,
+          amount: bookingPrice
         }
       ]
     };
@@ -614,7 +615,13 @@ export function AppStoreProvider({ children }) {
 
   const addBooking = (booking) => {
     try {
-      const newBooking = { ...booking, id: Date.now(), type: booking.type || "priority" };
+      // All new bookings start as "pending" regardless of input
+      const newBooking = { 
+        ...booking, 
+        id: Date.now(), 
+        type: booking.type || "priority",
+        status: "pending" // Force all new bookings to pending status
+      };
       const updatedBookings = [...bookings, newBooking];
       setBookings(updatedBookings);
       safeLocalStorage.setItem("bookings", JSON.stringify(updatedBookings));
@@ -680,11 +687,38 @@ export function AppStoreProvider({ children }) {
         relatedId: id
       });
       
-      // Auto-generate invoice if booking status changed to completed and no invoice exists
-      if (updates.status === 'completed' && oldBooking.status !== 'completed') {
+      // Auto-generate draft invoice if booking status changed to confirmed and no invoice exists
+      if (updates.status === 'confirmed' && oldBooking.status === 'pending') {
         const existingInvoice = invoices.find(inv => inv.bookingId === id);
         if (!existingInvoice) {
           generateInvoiceFromBooking(updatedBooking);
+        }
+      }
+      
+      // Sync invoice price if booking price was updated
+      if (updates.price !== undefined && updates.price !== oldBooking.price) {
+        const relatedInvoice = invoices.find(inv => inv.bookingId === id);
+        if (relatedInvoice) {
+          const newPrice = updates.price || EURO_PRICE_PER_BOOKING;
+          const updatedInvoices = invoices.map(inv => 
+            inv.bookingId === id ? {
+              ...inv,
+              amount: newPrice,
+              items: inv.items.map(item => ({
+                ...item,
+                rate: newPrice,
+                amount: newPrice
+              }))
+            } : inv
+          );
+          setInvoices(updatedInvoices);
+          safeLocalStorage.setItem("invoices", JSON.stringify(updatedInvoices));
+          
+          addActivityLog({
+            type: 'invoice_price_synced',
+            description: `Invoice price updated to ${formatCurrency(newPrice)} for booking ${id}`,
+            relatedId: relatedInvoice.id
+          });
         }
       }
       
@@ -707,6 +741,63 @@ export function AppStoreProvider({ children }) {
     } catch (error) {
       console.error('Failed to delete booking:', error);
       return { success: false, error: 'Failed to delete booking' };
+    }
+  };
+
+  // New workflow-specific functions
+  const confirmBooking = (bookingId) => {
+    try {
+      const booking = bookings.find(b => b.id === bookingId);
+      if (!booking) return { success: false, error: 'Booking not found' };
+      
+      const updatedBooking = { ...booking, status: 'confirmed' };
+      const updatedBookings = bookings.map(b => 
+        b.id === bookingId ? updatedBooking : b
+      );
+      setBookings(updatedBookings);
+      safeLocalStorage.setItem("bookings", JSON.stringify(updatedBookings));
+      
+      // Generate draft invoice for confirmed booking
+      const existingInvoice = invoices.find(inv => inv.bookingId === bookingId);
+      if (!existingInvoice) {
+        generateInvoiceFromBooking(updatedBooking);
+      }
+      
+      addActivityLog({
+        type: 'booking_confirmed',
+        description: `Booking confirmed for ${updatedBooking.customer} - Draft invoice created`,
+        relatedId: bookingId
+      });
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Failed to confirm booking:', error);
+      return { success: false, error: 'Failed to confirm booking' };
+    }
+  };
+
+  const markBookingCompleted = (bookingId) => {
+    try {
+      const booking = bookings.find(b => b.id === bookingId);
+      if (!booking) return { success: false, error: 'Booking not found' };
+      
+      const updatedBooking = { ...booking, status: 'completed' };
+      const updatedBookings = bookings.map(b => 
+        b.id === bookingId ? updatedBooking : b
+      );
+      setBookings(updatedBookings);
+      safeLocalStorage.setItem("bookings", JSON.stringify(updatedBookings));
+      
+      addActivityLog({
+        type: 'booking_completed',
+        description: `Booking completed for ${updatedBooking.customer}`,
+        relatedId: bookingId
+      });
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Failed to mark booking completed:', error);
+      return { success: false, error: 'Failed to mark booking completed' };
     }
   };
 
@@ -1010,7 +1101,7 @@ export function AppStoreProvider({ children }) {
             lastBooking: booking.date,
             totalSpent: customerBookings
               .filter(b => b.status === 'completed')
-              .reduce((sum, b) => sum + (b.amount || EURO_PRICE_PER_BOOKING), 0)
+              .reduce((sum, b) => sum + (b.price || b.amount || EURO_PRICE_PER_BOOKING), 0)
           } : c
         );
         setCustomers(updatedCustomers);
@@ -1616,6 +1707,8 @@ export function AppStoreProvider({ children }) {
     addBooking,
     updateBooking,
     deleteBooking,
+    confirmBooking,
+    markBookingCompleted,
     addCustomer,
     updateCustomer,
     deleteCustomer,
