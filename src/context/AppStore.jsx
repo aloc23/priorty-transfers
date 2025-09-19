@@ -1,5 +1,8 @@
+import supabase from '../utils/supabaseClient';
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { formatCurrency, EURO_PRICE_PER_BOOKING } from "../utils/currency";
+import { sendDriverConfirmationEmail, generateBookingConfirmationHTML } from "../utils/email";
+import { getSupabaseJWT } from "../utils/auth";
 
 const AppStoreContext = createContext();
 
@@ -28,6 +31,20 @@ export function AppStoreProvider({ children }) {
   const [expenses, setExpenses] = useState([]);
   const [income, setIncome] = useState([]);
   const [estimations, setEstimations] = useState([]);
+  
+  // Global calendar and filter state for synchronization between dashboard and schedule
+  const [globalCalendarState, setGlobalCalendarState] = useState({
+    selectedDate: null,
+    selectedStatus: null,
+    selectedDriver: '',
+    currentView: 'month'
+  });
+
+  // Authentication error modal state
+  const [authErrorModal, setAuthErrorModal] = useState({
+    isOpen: false,
+    error: null
+  });
 
   // Safe localStorage utility functions
   const safeLocalStorage = {
@@ -82,17 +99,468 @@ export function AppStoreProvider({ children }) {
       }
     }
 
-    const storedBookings = safeLocalStorage.getItem("bookings");
-    if (storedBookings) {
-      try {
-        setBookings(JSON.parse(storedBookings));
-      } catch (error) {
-        console.warn('Failed to parse stored bookings data:', error);
-        initializeBookings();
-      }
-    } else {
-      initializeBookings();
+   useEffect(() => {
+  async function loadBookings() {
+    const { data, error } = await supabase
+      .from("bookings")
+      .select(`
+        id,
+        pickup,
+        dropoff,
+        scheduled_at,
+        status,
+        drivers (id, name, email),
+        vehicles (id, make, model, plate_number)
+      `)
+      .order("scheduled_at", { ascending: true });
+
+    if (error) {
+      console.error("❌ Error fetching bookings:", error.message);
+      return;
     }
+
+    const mapped = data.map((b) => ({
+      id: b.id,
+      pickup: b.pickup,
+      dropoff: b.dropoff,
+      scheduledAt: b.scheduled_at,
+      status: b.status,
+      driver: b.drivers
+        ? { id: b.drivers.id, name: b.drivers.name, email: b.drivers.email }
+        : null,
+      vehicle: b.vehicles
+        ? {
+            id: b.vehicles.id,
+            name: `${b.vehicles.make} ${b.vehicles.model}`,
+            plate: b.vehicles.plate_number,
+          }
+        : null,
+    }));
+
+    setBookings(mapped);
+  }
+  loadBookings();
+}, []);
+   useEffect(() => {
+  async function loadBookings() {
+    const { data, error } = await supabase
+      .from("bookings")
+      .select(`
+        id,
+        pickup,
+        dropoff,
+        scheduled_at,
+        status,
+        drivers (id, name, email),
+        vehicles (id, make, model, plate_number)
+      `)
+      .order("scheduled_at", { ascending: true });
+
+    if (error) {
+      console.error("❌ Error fetching bookings:", error.message);
+      return;
+    }
+
+    const mapped = data.map((b) => ({
+      id: b.id,
+      pickup: b.pickup,
+      dropoff: b.dropoff,
+      scheduledAt: b.scheduled_at,
+      status: b.status,
+      driver: b.drivers
+        ? { id: b.drivers.id, name: b.drivers.name, email: b.drivers.email }
+        : null,
+      vehicle: b.vehicles
+        ? {
+            id: b.vehicles.id,
+            name: `${b.vehicles.make} ${b.vehicles.model}`,
+            plate: b.vehicles.plate_number,
+          }
+        : null,
+    }));
+
+    setBookings(mapped);
+  }
+  loadBookings();
+}, []);
+   useEffect(() => {
+  async function loadBookings() {
+    const { data, error } = await supabase
+      .from("bookings")
+      .select(`
+        id,
+        pickup,
+        dropoff,
+        scheduled_at,
+        status,
+        drivers (id, name, email),
+        vehicles (id, make, model, plate_number)
+      `)
+      .order("scheduled_at", { ascending: true });
+
+    if (error) {
+      console.error("❌ Error fetching bookings:", error.message);
+      return;
+    }
+
+    const mapped = data.map((b) => ({
+      id: b.id,
+      pickup: b.pickup,
+      dropoff: b.dropoff,
+      scheduledAt: b.scheduled_at,
+      status: b.status,
+      driver: b.drivers
+        ? { id: b.drivers.id, name: b.drivers.name, email: b.drivers.email }
+        : null,
+      vehicle: b.vehicles
+        ? {
+            id: b.vehicles.id,
+            name: `${b.vehicles.make} ${b.vehicles.model}`,
+            plate: b.vehicles.plate_number,
+          }
+        : null,
+    }));
+
+    setBookings(mapped);
+  }
+  loadBookings();
+}, []);
+   useEffect(() => {
+  async function loadBookings() {
+    const { data, error } = await supabase
+      .from("bookings")
+      .select(`
+        id,
+        pickup,
+        dropoff,
+        scheduled_at,
+        status,
+        drivers (id, name, email),
+        vehicles (id, make, model, plate_number)
+      `)
+      .order("scheduled_at", { ascending: true });
+
+    if (error) {
+      console.error("❌ Error fetching bookings:", error.message);
+      return;
+    }
+
+    const mapped = data.map((b) => ({
+      id: b.id,
+      pickup: b.pickup,
+      dropoff: b.dropoff,
+      scheduledAt: b.scheduled_at,
+      status: b.status,
+      driver: b.drivers
+        ? { id: b.drivers.id, name: b.drivers.name, email: b.drivers.email }
+        : null,
+      vehicle: b.vehicles
+        ? {
+            id: b.vehicles.id,
+            name: `${b.vehicles.make} ${b.vehicles.model}`,
+            plate: b.vehicles.plate_number,
+          }
+        : null,
+    }));
+
+    setBookings(mapped);
+  }
+  loadBookings();
+}, []);
+   useEffect(() => {
+  async function loadBookings() {
+    const { data, error } = await supabase
+      .from("bookings")
+      .select(`
+        id,
+        pickup,
+        dropoff,
+        scheduled_at,
+        status,
+        drivers (id, name, email),
+        vehicles (id, make, model, plate_number)
+      `)
+      .order("scheduled_at", { ascending: true });
+
+    if (error) {
+      console.error("❌ Error fetching bookings:", error.message);
+      return;
+    }
+
+    const mapped = data.map((b) => ({
+      id: b.id,
+      pickup: b.pickup,
+      dropoff: b.dropoff,
+      scheduledAt: b.scheduled_at,
+      status: b.status,
+      driver: b.drivers
+        ? { id: b.drivers.id, name: b.drivers.name, email: b.drivers.email }
+        : null,
+      vehicle: b.vehicles
+        ? {
+            id: b.vehicles.id,
+            name: `${b.vehicles.make} ${b.vehicles.model}`,
+            plate: b.vehicles.plate_number,
+          }
+        : null,
+    }));
+
+    setBookings(mapped);
+  }
+  loadBookings();
+}, []);
+   useEffect(() => {
+  async function loadBookings() {
+    const { data, error } = await supabase
+      .from("bookings")
+      .select(`
+        id,
+        pickup,
+        dropoff,
+        scheduled_at,
+        status,
+        drivers (id, name, email),
+        vehicles (id, make, model, plate_number)
+      `)
+      .order("scheduled_at", { ascending: true });
+
+    if (error) {
+      console.error("❌ Error fetching bookings:", error.message);
+      return;
+    }
+
+    const mapped = data.map((b) => ({
+      id: b.id,
+      pickup: b.pickup,
+      dropoff: b.dropoff,
+      scheduledAt: b.scheduled_at,
+      status: b.status,
+      driver: b.drivers
+        ? { id: b.drivers.id, name: b.drivers.name, email: b.drivers.email }
+        : null,
+      vehicle: b.vehicles
+        ? {
+            id: b.vehicles.id,
+            name: `${b.vehicles.make} ${b.vehicles.model}`,
+            plate: b.vehicles.plate_number,
+          }
+        : null,
+    }));
+
+    setBookings(mapped);
+  }
+  loadBookings();
+}, []);;
+   useEffect(() => {
+  async function loadBookings() {
+    const { data, error } = await supabase
+      .from("bookings")
+      .select(`
+        id,
+        pickup,
+        dropoff,
+        scheduled_at,
+        status,
+        drivers (id, name, email),
+        vehicles (id, make, model, plate_number)
+      `)
+      .order("scheduled_at", { ascending: true });
+
+    if (error) {
+      console.error("❌ Error fetching bookings:", error.message);
+      return;
+    }
+
+    const mapped = data.map((b) => ({
+      id: b.id,
+      pickup: b.pickup,
+      dropoff: b.dropoff,
+      scheduledAt: b.scheduled_at,
+      status: b.status,
+      driver: b.drivers
+        ? { id: b.drivers.id, name: b.drivers.name, email: b.drivers.email }
+        : null,
+      vehicle: b.vehicles
+        ? {
+            id: b.vehicles.id,
+            name: `${b.vehicles.make} ${b.vehicles.model}`,
+            plate: b.vehicles.plate_number,
+          }
+        : null,
+    }));
+
+    setBookings(mapped);
+  }
+  loadBookings();
+}, []);
+   useEffect(() => {
+  async function loadBookings() {
+    const { data, error } = await supabase
+      .from("bookings")
+      .select(`
+        id,
+        pickup,
+        dropoff,
+        scheduled_at,
+        status,
+        drivers (id, name, email),
+        vehicles (id, make, model, plate_number)
+      `)
+      .order("scheduled_at", { ascending: true });
+
+    if (error) {
+      console.error("❌ Error fetching bookings:", error.message);
+      return;
+    }
+
+    const mapped = data.map((b) => ({
+      id: b.id,
+      pickup: b.pickup,
+      dropoff: b.dropoff,
+      scheduledAt: b.scheduled_at,
+      status: b.status,
+      driver: b.drivers
+        ? { id: b.drivers.id, name: b.drivers.name, email: b.drivers.email }
+        : null,
+      vehicle: b.vehicles
+        ? {
+            id: b.vehicles.id,
+            name: `${b.vehicles.make} ${b.vehicles.model}`,
+            plate: b.vehicles.plate_number,
+          }
+        : null,
+    }));
+
+    setBookings(mapped);
+  }
+  loadBookings();
+}, []);
+   useEffect(() => {
+  async function loadBookings() {
+    const { data, error } = await supabase
+      .from("bookings")
+      .select(`
+        id,
+        pickup,
+        dropoff,
+        scheduled_at,
+        status,
+        drivers (id, name, email),
+        vehicles (id, make, model, plate_number)
+      `)
+      .order("scheduled_at", { ascending: true });
+
+    if (error) {
+      console.error("❌ Error fetching bookings:", error.message);
+      return;
+    }
+
+    const mapped = data.map((b) => ({
+      id: b.id,
+      pickup: b.pickup,
+      dropoff: b.dropoff,
+      scheduledAt: b.scheduled_at,
+      status: b.status,
+      driver: b.drivers
+        ? { id: b.drivers.id, name: b.drivers.name, email: b.drivers.email }
+        : null,
+      vehicle: b.vehicles
+        ? {
+            id: b.vehicles.id,
+            name: `${b.vehicles.make} ${b.vehicles.model}`,
+            plate: b.vehicles.plate_number,
+          }
+        : null,
+    }));
+
+    setBookings(mapped);
+  }
+  loadBookings();
+}, []);
+   useEffect(() => {
+  async function loadBookings() {
+    const { data, error } = await supabase
+      .from("bookings")
+      .select(`
+        id,
+        pickup,
+        dropoff,
+        scheduled_at,
+        status,
+        drivers (id, name, email),
+        vehicles (id, make, model, plate_number)
+      `)
+      .order("scheduled_at", { ascending: true });
+
+    if (error) {
+      console.error("❌ Error fetching bookings:", error.message);
+      return;
+    }
+
+    const mapped = data.map((b) => ({
+      id: b.id,
+      pickup: b.pickup,
+      dropoff: b.dropoff,
+      scheduledAt: b.scheduled_at,
+      status: b.status,
+      driver: b.drivers
+        ? { id: b.drivers.id, name: b.drivers.name, email: b.drivers.email }
+        : null,
+      vehicle: b.vehicles
+        ? {
+            id: b.vehicles.id,
+            name: `${b.vehicles.make} ${b.vehicles.model}`,
+            plate: b.vehicles.plate_number,
+          }
+        : null,
+    }));
+
+    setBookings(mapped);
+  }
+  loadBookings();
+}, []);
+   useEffect(() => {
+  async function loadBookings() {
+    const { data, error } = await supabase
+      .from("bookings")
+      .select(`
+        id,
+        pickup,
+        dropoff,
+        scheduled_at,
+        status,
+        drivers (id, name, email),
+        vehicles (id, make, model, plate_number)
+      `)
+      .order("scheduled_at", { ascending: true });
+
+    if (error) {
+      console.error("❌ Error fetching bookings:", error.message);
+      return;
+    }
+
+    const mapped = data.map((b) => ({
+      id: b.id,
+      pickup: b.pickup,
+      dropoff: b.dropoff,
+      scheduledAt: b.scheduled_at,
+      status: b.status,
+      driver: b.drivers
+        ? { id: b.drivers.id, name: b.drivers.name, email: b.drivers.email }
+        : null,
+      vehicle: b.vehicles
+        ? {
+            id: b.vehicles.id,
+            name: `${b.vehicles.make} ${b.vehicles.model}`,
+            plate: b.vehicles.plate_number,
+          }
+        : null,
+    }));
+
+    setBookings(mapped);
+  }
+  loadBookings();
+}, []);
 
     const storedCustomers = safeLocalStorage.getItem("customers");
     if (storedCustomers) {
@@ -203,30 +671,65 @@ export function AppStoreProvider({ children }) {
   }, []);
 
   const initializeBookings = () => {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    const nextWeek = new Date(today);
+    nextWeek.setDate(today.getDate() + 7);
+    const nextWeekEnd = new Date(nextWeek);
+    nextWeekEnd.setDate(nextWeek.getDate() + 3);
+    
     const sampleBookings = [
       {
         id: 1,
         customer: "John Doe",
         pickup: "123 Main St",
         destination: "456 Oak Ave",
-        date: "2024-01-15",
+        date: tomorrow.toISOString().split('T')[0],
         time: "09:00",
         status: "confirmed",
         driver: "Mike Johnson",
         vehicle: "Toyota Camry",
-        type: "priority"
+        type: "single",
+        source: "internal",
+        price: 45,
+        pickupCompleted: false,
+        returnCompleted: false
       },
       {
         id: 2,
         customer: "Jane Smith",
         pickup: "789 Pine St",
         destination: "321 Elm St",
-        date: "2024-01-16",
+        date: tomorrow.toISOString().split('T')[0],
         time: "14:30",
         status: "pending",
         driver: "Sarah Wilson",
         vehicle: "Honda Accord",
-        type: "outsourced"
+        type: "single",
+        source: "outsourced",
+        partner: "City Cab Co.",
+        price: 45,
+        pickupCompleted: false,
+        returnCompleted: false
+      },
+      {
+        id: 3,
+        customer: "Business Corp",
+        pickup: "Airport Terminal 1",
+        destination: "Hotel District",
+        tourStartDate: nextWeek.toISOString().split('T')[0],
+        tourEndDate: nextWeekEnd.toISOString().split('T')[0],
+        tourPickupTime: "08:00",
+        tourReturnPickupTime: "18:00",
+        status: "confirmed",
+        driver: "Tom Brown",
+        vehicle: "BMW 7 Series - BMW-001",
+        type: "tour",
+        source: "internal",
+        price: 320,
+        pickupCompleted: false,
+        returnCompleted: false
       }
     ];
     setBookings(sampleBookings);
@@ -245,9 +748,9 @@ export function AppStoreProvider({ children }) {
 
   const initializeDrivers = () => {
     const sampleDrivers = [
-      { id: 1, name: "Mike Johnson", license: "D123456", phone: "555-0201", status: "available", rating: 4.8 },
-      { id: 2, name: "Sarah Wilson", license: "D789012", phone: "555-0202", status: "busy", rating: 4.9 },
-      { id: 3, name: "Tom Brown", license: "D345678", phone: "555-0203", status: "available", rating: 4.7 }
+      { id: 1, name: "Mike Johnson", email: "mike@example.com", license: "D123456", phone: "555-0201", status: "available", rating: 4.8 },
+      { id: 2, name: "Sarah Wilson", email: "sarah@example.com", license: "D789012", phone: "555-0202", status: "busy", rating: 4.9 },
+      { id: 3, name: "Tom Brown", email: "tom@example.com", license: "D345678", phone: "555-0203", status: "available", rating: 4.7 }
     ];
     setDrivers(sampleDrivers);
     safeLocalStorage.setItem("drivers", JSON.stringify(sampleDrivers));
@@ -613,139 +1116,10250 @@ export function AppStoreProvider({ children }) {
     safeLocalStorage.removeItem("currentUser");
   };
 
-  const addBooking = (booking) => {
-    try {
-      // All new bookings start as "pending" regardless of input
-      const newBooking = { 
-        ...booking, 
-        id: Date.now(), 
-        type: booking.type || "priority",
-        status: "pending" // Force all new bookings to pending status
-      };
-      const updatedBookings = [...bookings, newBooking];
-      setBookings(updatedBookings);
-      safeLocalStorage.setItem("bookings", JSON.stringify(updatedBookings));
-      
-      // Auto-create customer if they don't exist
-      const customerName = newBooking.customer;
-      const customer = customers.find(c => c.name === customerName);
-      if (customer) {
-        const updatedCustomers = customers.map(c => 
-          c.name === customerName ? { ...c, totalBookings: c.totalBookings + 1 } : c
-        );
-        setCustomers(updatedCustomers);
-        safeLocalStorage.setItem("customers", JSON.stringify(updatedCustomers));
-      } else if (customerName) {
-        // Create new customer
-        const newCustomer = {
-          id: Date.now(),
-          name: customerName,
-          email: booking.customerEmail || '',
-          phone: booking.customerPhone || '',
-          totalBookings: 1,
-          totalSpent: 0,
-          status: 'active',
-          lastBooking: newBooking.date
-        };
-        const updatedCustomers = [...customers, newCustomer];
-        setCustomers(updatedCustomers);
-        safeLocalStorage.setItem("customers", JSON.stringify(updatedCustomers));
-        
-        addActivityLog({
-          type: 'customer_auto_created',
-          description: `Customer ${customerName} automatically created from booking`,
-          relatedId: newCustomer.id
-        });
-      }
-      
-      addActivityLog({
-        type: 'booking_created',
-        description: `New booking created for ${newBooking.customer}`,
-        relatedId: newBooking.id
-      });
-      
-      return { success: true, booking: newBooking };
-    } catch (error) {
-      console.error('Failed to add booking:', error);
-      return { success: false, error: 'Failed to save booking' };
-    }
-  };
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
 
-  const updateBooking = (id, updates) => {
-    try {
-      const oldBooking = bookings.find(booking => booking.id === id);
-      const updatedBooking = { ...oldBooking, ...updates };
-      const updatedBookings = bookings.map(booking => 
-        booking.id === id ? updatedBooking : booking
-      );
-      setBookings(updatedBookings);
-      safeLocalStorage.setItem("bookings", JSON.stringify(updatedBookings));
-      
-      addActivityLog({
-        type: 'booking_updated',
-        description: `Booking updated for ${updatedBooking.customer}`,
-        relatedId: id
-      });
-      
-      // Auto-generate draft invoice if booking status changed to confirmed and no invoice exists
-      if (updates.status === 'confirmed' && oldBooking.status === 'pending') {
-        const existingInvoice = invoices.find(inv => inv.bookingId === id);
-        if (!existingInvoice) {
-          generateInvoiceFromBooking(updatedBooking);
-        }
-      }
-      
-      // Sync invoice price if booking price was updated
-      if (updates.price !== undefined && updates.price !== oldBooking.price) {
-        const relatedInvoice = invoices.find(inv => inv.bookingId === id);
-        if (relatedInvoice) {
-          const newPrice = updates.price || EURO_PRICE_PER_BOOKING;
-          const updatedInvoices = invoices.map(inv => 
-            inv.bookingId === id ? {
-              ...inv,
-              amount: newPrice,
-              items: inv.items.map(item => ({
-                ...item,
-                rate: newPrice,
-                amount: newPrice
-              }))
-            } : inv
-          );
-          setInvoices(updatedInvoices);
-          safeLocalStorage.setItem("invoices", JSON.stringify(updatedInvoices));
-          
-          addActivityLog({
-            type: 'invoice_price_synced',
-            description: `Invoice price updated to ${formatCurrency(newPrice)} for booking ${id}`,
-            relatedId: relatedInvoice.id
-          });
-        }
-      }
-      
-      // Sync related data
-      syncBookingData(id);
-      
-      return { success: true };
-    } catch (error) {
-      console.error('Failed to update booking:', error);
-      return { success: false, error: 'Failed to update booking' };
-    }
-  };
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
 
-  const deleteBooking = (id) => {
-    try {
-      const updatedBookings = bookings.filter(booking => booking.id !== id);
-      setBookings(updatedBookings);
-      safeLocalStorage.setItem("bookings", JSON.stringify(updatedBookings));
-      return { success: true };
-    } catch (error) {
-      console.error('Failed to delete booking:', error);
-      return { success: false, error: 'Failed to delete booking' };
-    }
-  };
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};: c
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};ng`,
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};o invoice exists
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};r booking ${id}`,
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+const addBooking = async (booking) => {
+  try {
+    const newBooking = {
+      ...booking,
+      status: "pending",
+      pickupCompleted: false,
+      returnCompleted: false,
+    };
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert([newBooking])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings([...bookings, data]);
+
+    addActivityLog({
+      type: "booking_created",
+      description: `New booking created for ${data.customer || "Unknown"}`,
+      relatedId: data.id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to add booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBooking = async (id, updates) => {
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setBookings(bookings.map((b) => (b.id === id ? data : b)));
+
+    addActivityLog({
+      type: "booking_updated",
+      description: `Booking ${id} updated`,
+      relatedId: id,
+    });
+
+    return { success: true, booking: data };
+  } catch (error) {
+    console.error("Failed to update booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteBooking = async (id) => {
+  try {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) throw error;
+
+    setBookings(bookings.filter((b) => b.id !== id));
+
+    addActivityLog({
+      type: "booking_deleted",
+      description: `Booking ${id} deleted`,
+      relatedId: id,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete booking:", error.message);
+    return { success: false, error: error.message };
+  }
+};
 
   // New workflow-specific functions
-  const confirmBooking = (bookingId) => {
+  const confirmBooking = async (bookingId) => {
     try {
       const booking = bookings.find(b => b.id === bookingId);
       if (!booking) return { success: false, error: 'Booking not found' };
@@ -763,13 +11377,81 @@ export function AppStoreProvider({ children }) {
         generateInvoiceFromBooking(updatedBooking);
       }
       
+      // Send confirmation email to driver if driver is assigned
+      let emailResult = null;
+      if (updatedBooking.driver) {
+        const driver = drivers.find(d => d.name === updatedBooking.driver);
+        if (driver && driver.email) {
+          // Get JWT from Supabase session using the new auth utility
+          const authResult = await getSupabaseJWT();
+          
+          if (!authResult.success) {
+            // Show authentication error modal
+            setAuthErrorModal({
+              isOpen: true,
+              error: authResult.error
+            });
+            
+            // Still log the booking confirmation but mark email as failed
+            addActivityLog({
+              type: 'email_failed',
+              description: `Failed to send driver confirmation email to ${driver.name} (${driver.email}): ${authResult.error}`,
+              relatedId: bookingId
+            });
+            
+            emailResult = { success: false, error: authResult.error, isAuthError: true };
+          } else {
+            const subject = 'Booking Confirmation - Priority Transfers';
+            const html = generateBookingConfirmationHTML(updatedBooking, driver.name);
+            emailResult = await sendDriverConfirmationEmail({
+              to: driver.email,
+              subject,
+              html,
+              supabaseJwt: authResult.jwt
+            });
+            
+            if (emailResult.success) {
+              console.log(`✅ Driver confirmation email sent successfully to ${driver.email}`);
+              
+              addActivityLog({
+                type: 'email_sent',
+                description: `Driver confirmation email sent to ${driver.name} (${driver.email})`,
+                relatedId: bookingId
+              });
+            } else {
+              console.error(`❌ Failed to send driver confirmation email to ${driver.email}:`, emailResult.error);
+              
+              // Handle authentication errors
+              if (emailResult.isAuthError) {
+                setAuthErrorModal({
+                  isOpen: true,
+                  error: emailResult.error
+                });
+              }
+              
+              addActivityLog({
+                type: 'email_failed',
+                description: `Failed to send driver confirmation email to ${driver.name} (${driver.email}): ${emailResult.error}`,
+                relatedId: bookingId
+              });
+            }
+          }
+        } else {
+          console.warn(`⚠️  Driver ${updatedBooking.driver} not found or has no email address`);
+        }
+      }
+      
       addActivityLog({
         type: 'booking_confirmed',
-        description: `Booking confirmed for ${updatedBooking.customer} - Draft invoice created`,
+        description: `Booking confirmed for ${updatedBooking.customer} - Draft invoice created${emailResult?.success ? ' - Driver notification sent' : ''}`,
         relatedId: bookingId
       });
       
-      return { success: true };
+      return { 
+        success: true, 
+        emailSent: emailResult?.success || false,
+        emailError: emailResult?.success ? null : emailResult?.error
+      };
     } catch (error) {
       console.error('Failed to confirm booking:', error);
       return { success: false, error: 'Failed to confirm booking' };
@@ -1644,6 +12326,20 @@ export function AppStoreProvider({ children }) {
     }
   };
 
+  // Global calendar state management functions
+  const updateGlobalCalendarState = (updates) => {
+    setGlobalCalendarState(prev => ({ ...prev, ...updates }));
+  };
+
+  const resetGlobalCalendarFilters = () => {
+    setGlobalCalendarState({
+      selectedDate: null,
+      selectedStatus: null,
+      selectedDriver: '',
+      currentView: 'month'
+    });
+  };
+
   const convertEstimationToBooking = (estimationId) => {
     try {
       const estimation = estimations.find(e => e.id === estimationId);
@@ -1689,6 +12385,29 @@ export function AppStoreProvider({ children }) {
     }
   };
 
+  // Authentication error modal functions
+  const showAuthErrorModal = (error = null) => {
+    setAuthErrorModal({
+      isOpen: true,
+      error
+    });
+  };
+
+  const hideAuthErrorModal = () => {
+    setAuthErrorModal({
+      isOpen: false,
+      error: null
+    });
+  };
+
+  const handleReLogin = () => {
+    // Clear current user and redirect to login
+    logout();
+    hideAuthErrorModal();
+    // In a real app, this would navigate to login page
+    window.location.href = '/login';
+  };
+
   const value = {
     currentUser,
     bookings,
@@ -1702,6 +12421,8 @@ export function AppStoreProvider({ children }) {
     expenses,
     income,
     estimations,
+    globalCalendarState,
+    authErrorModal,
     login,
     logout,
     addBooking,
@@ -1748,7 +12469,13 @@ export function AppStoreProvider({ children }) {
     addEstimation,
     updateEstimation,
     deleteEstimation,
-    convertEstimationToBooking
+    convertEstimationToBooking,
+    updateGlobalCalendarState,
+    resetGlobalCalendarFilters,
+    // Authentication modal functions
+    showAuthErrorModal,
+    hideAuthErrorModal,
+    handleReLogin
   };
 
   return (

@@ -9,6 +9,7 @@ import Partners from "./pages/Partners";
 import Notifications from "./pages/Notifications";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import FinanceTracker from "./pages/FinanceTracker";
 import Estimations from "./pages/Estimations";
 import Billing from "./pages/Billing";
@@ -17,37 +18,46 @@ import { AppStoreProvider, useAppStore } from "./context/AppStore";
 import { FleetProvider } from "./context/FleetContext";
 import Sidebar from "./components/Sidebar";
 import MobileFAB from "./components/MobileFAB";
+import MobileTopbar from "./components/MobileTopbar";
+import FloatingHamburger from "./components/FloatingHamburger";
+import AuthErrorModal from "./components/AuthErrorModal";
 import { useResponsive } from "./hooks/useResponsive";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 function AuthenticatedShell() {
-  const { currentUser } = useAppStore();
+  const { currentUser, authErrorModal, hideAuthErrorModal, handleReLogin } = useAppStore();
   const { isMobile, isDesktop } = useResponsive();
-  const [sidebarOpen, setSidebarOpen] = useState(isDesktop);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Start closed by default
   
   // Handle responsive behavior for sidebar
-  // Only auto-open on desktop initially, allow manual collapse
   useEffect(() => {
-    // Only auto-open the first time when switching to desktop
-    // This allows users to manually collapse on desktop
-    if (isDesktop && sidebarOpen === false) {
-      // Check if this is the first load or switching from mobile
+    if (isDesktop) {
+      // On desktop, check if user manually collapsed it before
       const hasManuallyCollapsed = localStorage.getItem('sidebarManuallyCollapsed') === 'true';
       if (!hasManuallyCollapsed) {
-        setSidebarOpen(true);
+        setSidebarOpen(true); // Auto-open on desktop unless manually collapsed
       }
-    }
-    if (isMobile) {
-      // Clear the manually collapsed flag when on mobile
+    } else if (isMobile) {
+      // On mobile, always start closed and clear any manual collapse flags
+      setSidebarOpen(false);
       localStorage.removeItem('sidebarManuallyCollapsed');
     }
   }, [isDesktop, isMobile]);
   
   return (
     <div className="flex h-screen bg-slate-50">
+      {/* Floating Hamburger - only visible on mobile when sidebar is closed */}
+      {isMobile && !sidebarOpen && (
+        <FloatingHamburger onClick={() => setSidebarOpen(true)} />
+      )}
+      
+      {/* Mobile Topbar - only shows when sidebar is open */}
+      <MobileTopbar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
       
       <main className={`flex-1 overflow-y-auto bg-slate-50 ${isMobile ? 'w-full' : ''}`}>
-        <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
+        <div className={`${isMobile ? 'p-2 pt-14' : 'p-4 md:p-6 lg:p-8'} max-w-full mx-auto`}>
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/schedule" element={<RequireAuth><Schedule /></RequireAuth>} />
@@ -68,6 +78,14 @@ function AuthenticatedShell() {
       
       {/* Mobile FAB for quick actions */}
       <MobileFAB />
+      
+      {/* Global Authentication Error Modal */}
+      <AuthErrorModal 
+        isOpen={authErrorModal.isOpen}
+        onClose={hideAuthErrorModal}
+        onReLogin={handleReLogin}
+        error={authErrorModal.error}
+      />
     </div>
   );
 }
@@ -75,11 +93,12 @@ function AuthenticatedShell() {
 function AppShell() {
   const { currentUser } = useAppStore();
   
-  // If not authenticated, show only login page
+  // If not authenticated, show only login and signup pages
   if (!currentUser) {
     return (
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     );
@@ -103,12 +122,14 @@ function RequireRole({children, roles}){
 
 export default function App(){
   return (
-    <FleetProvider>
-      <AppStoreProvider>
-        <Router>
-          <AppShell />
-        </Router>
-      </AppStoreProvider>
-    </FleetProvider>
+    <ErrorBoundary>
+      <FleetProvider>
+        <AppStoreProvider>
+          <Router>
+            <AppShell />
+          </Router>
+        </AppStoreProvider>
+      </FleetProvider>
+    </ErrorBoundary>
   );
 }

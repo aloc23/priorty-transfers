@@ -1,76 +1,47 @@
 // BookingsFleetGroupedWidget: Combined Bookings & Calendar with Fleet & Driver Status
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import BookingsCalendarWidget, { BookNowButton } from './BookingsCalendarWidget';
 import FleetDriverChecker from './FleetDriverChecker';
+import ResourceStatusBlock from './ResourceStatusBlock';
 import { CalendarIcon, VehicleIcon } from './Icons';
 import { createContext } from 'react';
 import moment from 'moment';
+import { isFeatureEnabled } from '../config/features';
 
 // Context for Book Now button (must match BookingsCalendarWidget)
 const BookNowContext = BookingsCalendarWidget.BookNowContext || createContext({ openModal: () => {}, openModalWithDate: (date) => {} });
 
 export default function BookingsFleetGroupedWidget({ compact = false }) {
   const [activeTab, setActiveTab] = useState('bookings'); // 'bookings' or 'fleet'
+  const bookingsCalendarRef = useRef(null);
+  
+  // Check if Fleet & Driver Status feature is enabled
+  const fleetStatusEnabled = isFeatureEnabled('FLEET_DRIVER_STATUS');
 
-  // Modal state and handlers (moved up)
-  const [showBookingModal, setShowBookingModal] = useState(false);
-  const [bookingForm, setBookingForm] = useState({
-    customer: '',
-    pickup: '',
-    destination: '',
-    date: moment().format('YYYY-MM-DD'),
-    time: '09:00',
-    driver: '',
-    vehicleId: '',
-    status: 'pending',
-    type: 'priority',
-    price: 45,
-    // New enhanced fields
-    bookingType: 'internal', // 'internal' | 'outsourced'
-    tripType: 'single', // 'single' | 'tour'
-    returnTrip: false,
-    returnPickup: '',
-    returnDestination: '',
-    returnDate: '',
-    returnTime: '',
-    partnerId: ''
-  });
-
-  const openBookingModalDefault = () => {
-    setBookingForm({
-      customer: '',
-      pickup: '',
-      destination: '',
-      date: moment().format('YYYY-MM-DD'),
-      time: '09:00',
-      driver: '',
-      vehicleId: '',
-      status: 'pending',
-      type: 'priority',
-      price: 45,
-      // New enhanced fields
-      bookingType: 'internal',
-      tripType: 'single',
-      returnTrip: false,
-      returnPickup: '',
-      returnDestination: '',
-      returnDate: '',
-      returnTime: '',
-      partnerId: ''
-    });
-    setShowBookingModal(true);
-  };
-  const openBookingModalWithDate = (date) => {
-    setBookingForm((form) => ({ ...form, date: moment(date).format('YYYY-MM-DD') }));
-    setShowBookingModal(true);
-  };
-  const bookNowContextValue = {
-    openModal: openBookingModalDefault,
-    openModalWithDate: openBookingModalWithDate
+  // Provide context value that will be accessible to BookNowButton
+  const contextValue = {
+    openModal: () => {
+      // Set the active tab to bookings and trigger the modal
+      setActiveTab('bookings');
+      // Use a small delay to ensure the calendar widget is rendered
+      setTimeout(() => {
+        if (window.__openBookingModal) {
+          window.__openBookingModal();
+        }
+      }, 50);
+    },
+    openModalWithDate: (date) => {
+      setActiveTab('bookings');
+      setTimeout(() => {
+        if (window.__openBookingModalWithDate) {
+          window.__openBookingModalWithDate(date);
+        }
+      }, 50);
+    }
   };
 
   return (
-    <BookNowContext.Provider value={bookNowContextValue}>
+    <BookNowContext.Provider value={contextValue}>
       <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-4 md:p-5">
         {/* Header Row: Tabs + Book Now button */}
         <div className="flex flex-row items-center gap-2 mb-3 flex-nowrap min-w-0">
@@ -82,13 +53,16 @@ export default function BookingsFleetGroupedWidget({ compact = false }) {
               <CalendarIcon className="w-4 h-4" />
               <span>Bookings & Calendar</span>
             </button>
-            <button
-              onClick={() => setActiveTab('fleet')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg font-medium text-sm transition-all duration-200 ${activeTab === 'fleet' ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-500' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
-            >
-              <VehicleIcon className="w-4 h-4" />
-              <span>Fleet & Driver Status</span>
-            </button>
+            {/* Fleet & Driver Status tab - conditionally rendered based on feature flag */}
+            {fleetStatusEnabled && (
+              <button
+                onClick={() => setActiveTab('fleet')}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg font-medium text-sm transition-all duration-200 ${activeTab === 'fleet' ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-500' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
+              >
+                <VehicleIcon className="w-4 h-4" />
+                <span>Fleet & Driver Status</span>
+              </button>
+            )}
           </div>
           <div className="flex-shrink-0 ml-auto">
             <BookNowButton />
@@ -100,16 +74,21 @@ export default function BookingsFleetGroupedWidget({ compact = false }) {
             <div className="p-0 md:-m-5">
               <BookingsCalendarWidget 
                 showStatusPillsInHeader={false}
-                showBookingModal={showBookingModal}
-                setShowBookingModal={setShowBookingModal}
-                bookingForm={bookingForm}
-                setBookingForm={setBookingForm}
               />
             </div>
           )}
-          {activeTab === 'fleet' && (
-            <div className="p-0 md:-m-5">
-              <FleetDriverChecker compact={compact} />
+          {/* Fleet & Driver Status content - conditionally rendered based on feature flag */}
+          {fleetStatusEnabled && activeTab === 'fleet' && (
+            <div className="space-y-6">
+              {/* Enhanced Resource Status Block */}
+              <div className="-mx-4 md:-mx-5">
+                <ResourceStatusBlock compact={true} />
+              </div>
+              
+              {/* Fleet & Driver Checker */}
+              <div className="-mx-4 md:-mx-5">
+                <FleetDriverChecker compact={compact} />
+              </div>
             </div>
           )}
         </div>

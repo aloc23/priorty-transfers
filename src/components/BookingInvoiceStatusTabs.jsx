@@ -3,7 +3,7 @@ import BookingStatusBlock from './BookingStatusBlock';
 import InvoiceStatusBlock from './InvoiceStatusBlock';
 import { BookingIcon, InvoiceIcon } from './Icons';
 
-export default function BookingInvoiceStatusTabs({ compact = false }) {
+export default function BookingInvoiceStatusTabs({ compact = false, showAddButtons = false }) {
   const [activeTab, setActiveTab] = useState('booking');
 
   const tabs = [
@@ -20,11 +20,11 @@ export default function BookingInvoiceStatusTabs({ compact = false }) {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-t-lg font-medium text-sm transition-all duration-200 ${
-                activeTab === tab.id
-                  ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-500'
-                  : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
-              }`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-t-lg font-medium text-sm transition-all duration-300 ease-in-out outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-slate-900
+                ${activeTab === tab.id
+                  ? 'bg-blue-50 text-blue-600 border-b-2 border-accent shadow-[0_0_16px_var(--tw-ring-color)] ring-2 ring-accent ring-offset-2 ring-offset-slate-900 underline underline-offset-4 decoration-accent'
+                  : 'text-slate-500 hover:text-blue-700 hover:bg-blue-50 hover:shadow-[0_0_8px_var(--tw-ring-color)] hover:ring-2 hover:ring-accent hover:ring-offset-2 hover:ring-offset-slate-900'}
+              `}
             >
               <span className="w-4 h-4">
                 <tab.icon className="w-4 h-4" />
@@ -48,7 +48,7 @@ export default function BookingInvoiceStatusTabs({ compact = false }) {
           <InvoiceStatusBlock 
             compact={compact} 
             showInvoiceList={true} 
-            showAddButtons={true}
+            showAddButtons={showAddButtons}
           />
         )}
       </div>

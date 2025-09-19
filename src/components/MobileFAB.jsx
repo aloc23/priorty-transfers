@@ -41,24 +41,39 @@ export default function MobileFAB() {
     }
   }, [isMobile, isOpen]);
 
-  // Only show FAB on mobile screens
-  if (!isMobile || !currentUser) {
+  // Show FAB on both mobile and desktop for the main "New Booking" action
+  if (!currentUser) {
     return null;
   }
 
+  // Primary action: New Booking
+  const handleNewBooking = () => {
+    // Try to trigger the global booking modal if available
+    if (window.__openBookingModal) {
+      window.__openBookingModal();
+      setIsOpen(false);
+    } else {
+      // Fallback: navigate to schedule page
+      window.location.hash = '#/schedule';
+      setIsOpen(false);
+    }
+  };
+
   const actions = [
+    {
+      label: 'New Booking',
+      icon: BookingIcon,
+      href: '#/schedule',
+      action: handleNewBooking,
+      color: 'bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600',
+      permission: true, // Available to all authenticated users
+      priority: true // Mark as priority action
+    },
     {
       label: 'Home',
       icon: DashboardIcon,
       href: '#/',
       color: 'bg-gradient-to-r from-indigo-600 to-purple-500 hover:from-indigo-700 hover:to-purple-600',
-      permission: true // Available to all authenticated users
-    },
-    {
-      label: 'New Booking',
-      icon: BookingIcon,
-      href: '#/schedule',
-      color: 'bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600',
       permission: true // Available to all authenticated users
     },
     {
@@ -102,9 +117,13 @@ export default function MobileFAB() {
 
   const visibleActions = actions.filter(action => action.permission);
 
-  const handleActionClick = (href) => {
-    window.location.hash = href;
-    setIsOpen(false);
+  const handleActionClick = (action) => {
+    if (action.action) {
+      action.action();
+    } else {
+      window.location.hash = action.href;
+      setIsOpen(false);
+    }
   };
 
   return (
@@ -130,7 +149,7 @@ export default function MobileFAB() {
           {visibleActions.map((action, index) => (
             <button
               key={action.label}
-              onClick={() => handleActionClick(action.href)}
+              onClick={() => handleActionClick(action)}
               className={`fab-action ${action.color} focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2`}
               style={{
                 animationDelay: `${index * 100}ms`

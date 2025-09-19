@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+// Google Maps DirectionsService for journey estimation
 import { useAppStore } from "../context/AppStore";
 import { useFleet } from "../context/FleetContext";
 import { calculateTotalPrice } from "../utils/priceCalculator";
@@ -28,6 +29,76 @@ export default function Estimations() {
     dateFrom: '',
     dateTo: '',
   });
+  // State for journey info (distance/duration/error)
+  const [journeyInfo, setJourneyInfo] = useState({ distance: '', duration: '', error: '' });
+  // Google Maps script loader (shared with BookingModal)
+  function loadGoogleMapsScript(apiKey, callback) {
+    if (window.google && window.google.maps) {
+      callback();
+      return;
+    }
+    const existingScript = document.getElementById('googleMapsScript');
+    if (!existingScript) {
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`;
+      script.id = 'googleMapsScript';
+      script.async = true;
+      script.onload = callback;
+      document.body.appendChild(script);
+    } else {
+      existingScript.onload = callback;
+    }
+  }
+
+  // Fetch journey info using DirectionsService
+  function fetchJourneyInfo(pickup, destination) {
+    if (!pickup || !destination) return;
+    const apiKey = 'AIzaSyDoCk3Y84BUdtuOQNNjSm7rPOOZzenrkkw'; // <-- Your API key
+    loadGoogleMapsScript(apiKey, () => {
+      if (!(window.google && window.google.maps && window.google.maps.DirectionsService)) {
+        setJourneyInfo({ distance: '', duration: '', error: 'Google Maps failed to load.' });
+        return;
+      }
+      const directionsService = new window.google.maps.DirectionsService();
+      directionsService.route(
+        {
+          origin: pickup,
+          destination: destination,
+          travelMode: window.google.maps.TravelMode.DRIVING,
+        },
+        (result, status) => {
+          if (status === 'OK' && result.routes.length > 0) {
+            const leg = result.routes[0].legs[0];
+            setJourneyInfo({
+              distance: leg.distance.text,
+              duration: leg.duration.text,
+              error: ''
+            });
+            // Optionally auto-fill form fields
+            setForm(form => ({
+              ...form,
+              distance: leg.distance.value ? (leg.distance.value / 1609.34).toFixed(2) : '', // meters to miles
+              duration: leg.duration.value ? (leg.duration.value / 3600).toFixed(2) : '' // seconds to hours
+            }));
+          } else {
+            setJourneyInfo({ distance: '', duration: '', error: 'No route found.' });
+          }
+        }
+      );
+    });
+  }
+  // Pickup and destination fields for estimation
+  const [locations, setLocations] = useState({ pickup: '', destination: '' });
+
+  // Fetch journey info when pickup or destination changes
+  useEffect(() => {
+    if (locations.pickup && locations.destination) {
+      fetchJourneyInfo(locations.pickup, locations.destination);
+    } else {
+      setJourneyInfo({ distance: '', duration: '', error: '' });
+    }
+    // eslint-disable-next-line
+  }, [locations.pickup, locations.destination]);
   // Example state for form and results (replace with your actual logic)
   const [form, setForm] = useState({
     serviceType: 'priority',
@@ -278,7 +349,7 @@ export default function Estimations() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4 md:p-8">
       {/* Header Section */}
-      <div className="bg-white rounded-2xl shadow-lg mb-8 p-6">
+  <div className="bg-white rounded-2xl shadow-lg mb-8 p-6 transition-shadow duration-300 hover:shadow-2xl hover:-translate-y-1">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-800 mb-2">Estimates & Quotes</h1>
@@ -298,19 +369,24 @@ export default function Estimations() {
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        <div className="xl:col-span-2">
-          {/* Job Details Card */}
-          <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
-            <div className="flex items-center mb-6">
-              <div className="bg-purple-100 p-3 rounded-full mr-4">
-                <EstimationIcon className="w-6 h-6 text-purple-600" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-800">Job Details & Costs</h2>
-                <p className="text-gray-600">Enter service parameters for accurate pricing</p>
-              </div>
+      {/* Job Details Card - Now at the top */}
+  <div className="bg-white rounded-2xl shadow-lg mb-8 transition-shadow duration-300 hover:shadow-2xl hover:-translate-y-1">
+        <div className="px-4 lg:px-8 py-4 lg:py-6 border-b border-gray-100">
+          <div className="flex items-center">
+            <div className="bg-purple-100 p-3 rounded-full mr-4">
+              <EstimationIcon className="w-6 h-6 text-purple-600" />
             </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800">Job Details & Costs</h2>
+              <p className="text-gray-600">Enter service parameters for accurate pricing</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Form and Cost Analysis Side by Side */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 p-4 lg:p-8">
+          <div className="lg:col-span-2">
+            {/* Form Content */}
             <form className="grid grid-cols-1 md:grid-cols-2 gap-6 estimation-form-mobile" onSubmit={handleSubmit}>
             <div>
               <label className="block mb-1">Service Type</label>
@@ -330,6 +406,14 @@ export default function Estimations() {
               </select>
             </div>
             <div>
+              <label className="block mb-1">Pickup Location</label>
+              <input type="text" value={locations.pickup} onChange={e => setLocations(l => ({ ...l, pickup: e.target.value }))} placeholder="Enter pickup address..." />
+            </div>
+            <div>
+              <label className="block mb-1">Destination</label>
+              <input type="text" value={locations.destination} onChange={e => setLocations(l => ({ ...l, destination: e.target.value }))} placeholder="Enter destination address..." />
+            </div>
+            <div>
               <label className="block mb-1">Distance (miles)</label>
               <input type="number" value={form.distance} onChange={e => setForm({ ...form, distance: e.target.value })} />
             </div>
@@ -337,6 +421,20 @@ export default function Estimations() {
               <label className="block mb-1">Duration (hours)</label>
               <input type="number" value={form.duration} onChange={e => setForm({ ...form, duration: e.target.value })} />
             </div>
+            {/* Journey Info Display */}
+            {(journeyInfo.distance || journeyInfo.duration || journeyInfo.error) && (
+              <div className="col-span-2 mt-2 p-3 bg-blue-50 rounded border border-blue-200">
+                <span className="font-semibold text-blue-800">Journey Estimate:</span>
+                {journeyInfo.error ? (
+                  <span className="text-red-500 ml-2">{journeyInfo.error}</span>
+                ) : (
+                  <>
+                    {journeyInfo.distance && <span className="ml-2">Distance: <b>{journeyInfo.distance}</b></span>}
+                    {journeyInfo.duration && <span className="ml-4">Duration: <b>{journeyInfo.duration}</b></span>}
+                  </>
+                )}
+              </div>
+            )}
             <div>
               <label className="block mb-1">Passengers</label>
               <input type="number" value={form.passengers} onChange={e => setForm({ ...form, passengers: e.target.value })} />
@@ -400,19 +498,30 @@ export default function Estimations() {
                 </div>
               </div>
             </div>
-            <div className="md:col-span-2 flex gap-2 pt-4 justify-end">
-              <button type="submit" className="btn btn-primary shadow-md hover:shadow-lg">
-                Save
-              </button>
-            </div>
-          </form>
-        </div>
-        <div className="card p-6">
-          <h3 className="font-semibold mb-4 text-lg text-gray-800">Live Cost Analysis</h3>
+              <div className="md:col-span-2 flex gap-2 pt-4 justify-end">
+                <button type="submit" className="btn btn-primary shadow-md hover:shadow-lg">
+                  Save
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div className="lg:col-span-1">
+            {/* Live Cost Analysis - Now positioned side by side */}
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-4 lg:p-6 h-fit">
+              <div className="flex items-center mb-4">
+                <div className="bg-green-100 p-3 rounded-full mr-4">
+                  <RevenueIcon className="w-6 h-6 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-800">Live Cost Analysis</h3>
+                  <p className="text-sm text-gray-600">Real-time pricing breakdown</p>
+                </div>
+              </div>
           {results ? (
-            <div className="space-y-4 cost-analysis-mobile">
+            <div className="space-y-4">
               {/* Service Summary */}
-              <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="bg-white/70 backdrop-blur-sm p-4 rounded-lg border border-green-200">
                 <h4 className="font-medium text-gray-700 mb-2">Service Summary</h4>
                 <div className="text-sm space-y-1">
                   <div className="flex justify-between">
@@ -431,7 +540,7 @@ export default function Estimations() {
               </div>
 
               {/* Cost Breakdown */}
-              <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="bg-white/70 backdrop-blur-sm p-4 rounded-lg border border-blue-200">
                 <h4 className="font-medium text-blue-800 mb-2">Cost Breakdown</h4>
                 <div className="text-sm space-y-1">
                   <div className="flex justify-between">
@@ -466,7 +575,7 @@ export default function Estimations() {
               </div>
 
               {/* Pricing Summary */}
-              <div className="bg-green-50 p-4 rounded-lg">
+              <div className="bg-gradient-to-br from-green-100 to-emerald-100 p-4 rounded-lg border border-green-300">
                 <h4 className="font-medium text-green-800 mb-2">Pricing Summary</h4>
                 <div className="text-sm space-y-1">
                   <div className="flex justify-between">
@@ -490,7 +599,7 @@ export default function Estimations() {
                     </div>
                   )}
                 </div>
-                <div className="border-t pt-2 mt-2">
+                <div className="border-t border-green-300 pt-2 mt-2">
                   <div className="flex justify-between text-lg font-bold text-green-700">
                     <span>Final Quote Price:</span>
                     <span>€{results.finalPrice}</span>
@@ -511,6 +620,7 @@ export default function Estimations() {
           )}
         </div>
       </div>
+    </div>
       <div className="flex flex-wrap items-center justify-end gap-3 mb-4">
         <button onClick={exportEstimations} className="btn btn-outline flex items-center gap-2">
           <DownloadIcon className="w-4 h-4" /> Export
